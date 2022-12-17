@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class Main {
 
@@ -23,53 +25,58 @@ public class Main {
             }
             System.out.println("Arboles: " + Arrays.deepToString(bosque) + "\n");
 
-            int arbolesVisibles = 0;
+            List<Integer> puntuaciones = new ArrayList<>();
+
             // Se recorren todos los árboles de izquierda a derecha y de arriba abajo
             for (int fila = 0; fila < bosque.length; fila++) {
+
                 for (int columna = 0; columna < bosque.length; columna++) {
 
-                    // Primera fila, última fila, primer árbol izquierdo y último árbol derecho
-                    boolean primeraFila = fila == 0;
-                    boolean ultimaFila = fila == bosque.length - 1;
-                    boolean primeraColuma = columna == 0 && fila > 0 && fila < bosque.length - 1;
-                    boolean ultimaColuma = columna == bosque.length - 1 && fila > 0 && fila < bosque.length - 1;
+                    int arbolActual = Integer.parseInt(bosque[fila][columna]);
+                    int totalzquierda = 0;
+                    int totalDerecha = 0;
+                    int totalArriba = 0;
+                    int totalAbajo = 0;
 
-                    if (primeraFila || ultimaFila || primeraColuma || ultimaColuma) {
-                        System.out.println("Arbol exterior: " + fila + "|" + columna + " height:" + bosque[fila][columna]);
-                        arbolesVisibles++;
-                    }
-
-                    // Arboles internos
-                    if (fila > 0 && columna > 0 && fila < bosque.length - 1 && columna < bosque.length - 1) {
-
-                        int valorArbolActual = Integer.parseInt(bosque[fila][columna]);
-                        boolean visibleIzquierda = true;
-                        boolean visibleDerecha = true;
-                        boolean visibleArriba = true;
-                        boolean visibleAbajo = true;
-
-                        // Visible desde Izquierda
-                        visibleIzquierda = isVisibleIzquierda(columna, valorArbolActual, bosque[fila]);
-
-                        // Visible desde Derecha
-                        visibleDerecha = isVisibleDerecha(bosque, fila, columna, valorArbolActual);
-
-                        // Visible desde arriba
-                        visibleArriba = isVisibleArriba(bosque, fila, columna, valorArbolActual);
-
-                        // Visible desde abajo
-                        visibleAbajo = isVisibleAbajo(bosque, fila, columna, valorArbolActual);
-
-                        // Si desde algún punto es visible el árbol se considera visible
-                        if (visibleIzquierda || visibleDerecha || visibleArriba || visibleAbajo) {
-                            arbolesVisibles++;
-                            System.out.println("Árbol de posición: " + fila + "|" + columna + " altura: " + bosque[fila][columna] + " es visible\n");
+                    for (int l = columna + 1; l < bosque.length; l++) {
+                        int arbolDerecho = Integer.parseInt(bosque[fila][l]);
+                        totalDerecha++;
+                        if (arbolDerecho >= arbolActual) {
+                            break;
                         }
                     }
+
+                    for (int k = columna - 1; k >= 0; k--) {
+                        int arbolIzquierdo = Integer.parseInt(bosque[fila][k]);
+                        totalzquierda++;
+                        if (arbolIzquierdo >= arbolActual) {
+                            break;
+                        }
+                    }
+
+                    for (int m = fila - 1; m >= 0; m--) {
+                        int arbolArriba = Integer.parseInt(bosque[m][columna]);
+                        totalArriba++;
+                        if (arbolArriba >= arbolActual) {
+                            break;
+                        }
+                    }
+
+                    for (int n = fila + 1; n < bosque.length; n++) {
+                        int arbolAbajo = Integer.parseInt(bosque[n][columna]);
+                        totalAbajo++;
+                        if (arbolAbajo >= arbolActual) {
+                            break;
+                        }
+                    }
+                    puntuaciones.add(totalzquierda * totalDerecha * totalAbajo * totalArriba);
                 }
             }
 
-            System.out.println("Total árboles visibles: " + arbolesVisibles);
+            System.out.println("Arbol más visible: " + puntuaciones.stream()
+                    .mapToInt(a -> a.intValue())
+                    .max()
+                    .getAsInt());
 
 
         } catch (Exception e) {
@@ -77,43 +84,4 @@ public class Main {
         }
     }
 
-    private static boolean isVisibleAbajo(String[][] bosque, int fila, int columna, int valorArbolActual) {
-        for (int indice = fila + 1; indice < bosque.length; indice++) {
-            int bottomTreeSize = Integer.parseInt(bosque[indice][columna]);
-            if (bottomTreeSize >= valorArbolActual) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private static boolean isVisibleArriba(String[][] bosque, int fila, int columna, int valorArbolActual) {
-        for (int indice = 0; indice < fila; indice++) {
-            int valorArbolArriba = Integer.parseInt(bosque[indice][columna]);
-            if (valorArbolArriba >= valorArbolActual) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private static boolean isVisibleDerecha(String[][] bosque, int fila, int columna, int valorArbolActual) {
-        for (int indice = columna + 1; indice < bosque.length; indice++) {
-            int valorArbolDerecha = Integer.parseInt(bosque[fila][indice]);
-            if (valorArbolDerecha >= valorArbolActual) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private static boolean isVisibleIzquierda(int columna, int valorArbolActual, String[] bosque) {
-        for (int indice = 0; indice < columna; indice++) {
-            int valorArbolIzquierda = Integer.parseInt(bosque[indice]);
-            if (valorArbolIzquierda >= valorArbolActual) {
-                return false;
-            }
-        }
-        return true;
-    }
 }
